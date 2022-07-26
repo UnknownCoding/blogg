@@ -1,24 +1,72 @@
-import logo from './logo.svg';
 import './App.css';
+import { ToastContainer } from 'react-toastify';
+import {BrowserRouter,Routes,Route} from 'react-router-dom'
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import { gapi } from 'gapi-script';
+import { useEffect } from 'react';
+import Header from './components/Header';
+import { useDispatch } from 'react-redux';
+import { setUser } from './redux/features/authSlice';
+import AddEditTour from './pages/AddEditTour';
+import SingleTours from './pages/SingleTours';
+import Dashboard from './pages/Dashboard';
+import PrivateRoute from './components/PrivateRoute';
+import NotFound from './pages/NotFound';
+import TagTours from './pages/TagTours';
 
 function App() {
+  
+  useEffect(() => {
+    function start() {
+      gapi.client.init({clientId:"339940164945-h4kejibu591omasn8qd7nhivbqg45fp8.apps.googleusercontent.com",scope: "",});
+    }
+    gapi.load("client:auth2", start);
+  });
+
+  const dispatch = useDispatch()
+  const user = JSON.parse(localStorage.getItem('profile'))
+  useEffect(()=>{
+    dispatch(setUser(user))
+  },[])
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <div className="App">
+        <Header/>
+        <ToastContainer />
+          <Routes>
+            <Route path='/' element={<Home/>}/>
+            <Route path='/login' element={<Login/>}/>
+            <Route path='/register' element={<Register/>}/>
+            
+            <Route path='/addTour' element={
+              <PrivateRoute>
+                <AddEditTour/>
+              </PrivateRoute>
+            }/>
+            <Route path='/editTour/:id' element={
+              <PrivateRoute>
+                <AddEditTour/>
+              </PrivateRoute>
+            }/>
+            
+            <Route path='/tour/:id' element={<SingleTours/>}/>
+            
+            <Route path='/dashboard' element={
+              <PrivateRoute>
+                <Dashboard/>
+              </PrivateRoute>
+            }/>
+
+            <Route path='*' element={<NotFound/>}/>
+            
+            <Route path="/tours/search" element={<Home />} />
+            <Route path="/tours/tag/:tag" element={<TagTours/>} />
+
+          </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
 
